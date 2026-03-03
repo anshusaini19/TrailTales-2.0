@@ -9,29 +9,42 @@ const Destination = require('../models/mongo/destination');
 const About = require('../models/mongo/about');  // Import the About model
 const Gallery = require('../models/mongo/gallery');
 const Testimonial = require('../models/mongo/testimonial');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-// Login route
 router.post('/login', async (req, res, next) => {
   try {
     const { username, password } = req.body;
-    const user = await User.findOne({ username, password });
-    if (user) {
-      res.cookie('username', user.username, { httpOnly: true });
-      return res.redirect('/api/home');
-    } else {
-      return res.redirect('/api/register');
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.render('login', { error: "Invalid credentials" });
     }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.render('login', { error: "Invalid credentials" });
+    }
+
+    res.cookie('username', user.username, { httpOnly: true });
+    return res.redirect('/api/home');
+
   } catch (err) {
     next(err);
   }
 });
 
-// Register route
 router.post('/register', async (req, res, next) => {
   try {
-    const { username, password } = req.body;
-    const newUser = new User({ username, password });
+    const { username, email, password } = req.body;
+
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.render('register', { error: "Username already exists" });
+    }
+
+    const newUser = new User({ username, email, password });
     await newUser.save();
+
     res.redirect('/');
   } catch (err) {
     next(err);
@@ -81,7 +94,7 @@ router.get('/book/:id', async (req, res) => {
 });
 
 
-router.post('/book', async (req, res, next) => {
+router.post('/book', authMiddleware, async (req, res, next) => {
   try {
     const { 
       packageId,
