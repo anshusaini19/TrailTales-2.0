@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrailTales - Explore the World</title>
+    <link rel="stylesheet" href="/css/landing.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body data-user="<%= username ? 'true' : 'false' %>">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">TrailTales</div>
+
+    <div class="nav-links">
+        <a href="/api/packages">Packages</a>
+        <a href="/api/destinations">Destinations</a>
+        <a href="/api/about">About</a>
+        <a href="/api/contact">Contact</a>
+
+        <% if (username) { %>
+            <a href="/api/home" class="btn-outline">Dashboard</a>
+            <a href="/api/logout" class="btn-primary">Logout</a>
+        <% } else { %>
+            <a href="/login" class="btn-outline">Login</a>
+            <a href="/register" class="btn-primary">Register</a>
+        <% } %>
+    </div>
+</nav>
+
+
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Discover Your Next Adventure</h1>
+        <p>Curated travel experiences designed for explorers.</p>
+        <a href="/api/packages" class="cta-btn">Explore Packages</a>
+    </div>
+</section>
+
+
+<!-- 🔥 TRENDING -->
+<section class="section-block">
+    <h2>🔥 Trending This Week</h2>
+
+    <div class="card-container">
+        <% if (trendingPackages && trendingPackages.length > 0) { %>
+            <% trendingPackages.forEach(pkg => { %>
+                <div class="card trending-card">
+                    <button class="heart-btn" data-id="<%= pkg._id %>">
+    <span class="heart-icon">♡</span>
+</button>
+                    <h3><%= pkg.name %></h3>
+                    <p><%= pkg.description ? pkg.description.substring(0, 80) : '' %>...</p>
+                    <div class="card-footer">
+                        <span class="price">₹ <%= pkg.price %></span>
+                        <a href="/api/book/<%= pkg._id %>" class="book-btn">Book</a>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No trending packages yet.</p>
+        <% } %>
+    </div>
+</section>
+
+
+<!-- ⭐ TOP RATED -->
+<section class="section-block alt-bg">
+    <h2>⭐ Top Rated</h2>
+
+    <div class="card-container">
+        <% if (topRated && topRated.length > 0) { %>
+            <% topRated.forEach(pkg => { %>
+                <div class="card premium-card">
+                    <h3><%= pkg.name %></h3>
+                    <p>Rating: <%= pkg.rating || 4.5 %> ⭐</p>
+                    <div class="card-footer">
+                        <span class="price">₹ <%= pkg.price %></span>
+                        <a href="/api/book/<%= pkg._id %>" class="book-btn">Explore</a>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No top rated packages available.</p>
+        <% } %>
+    </div>
+</section>
+
+
+<!-- 🕒 RECENTLY VIEWED -->
+<% if (recentlyViewed && recentlyViewed.length > 0) { %>
+<section class="section-block">
+    <h2>🕒 Recently Viewed</h2>
+
+    <div class="card-container">
+        <% recentlyViewed.forEach(pkg => { %>
+            <div class="card">
+                <h3><%= pkg.name %></h3>
+                <div class="card-footer">
+                    <span class="price">₹ <%= pkg.price %></span>
+                    <a href="/api/book/<%= pkg._id %>" class="book-btn">View Again</a>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</section>
+<% } %>
+
+
+<!-- WHY US -->
+<section class="why-us">
+    <h2>Why Choose TrailTales?</h2>
+
+    <div class="why-container">
+        <div class="why-box">
+            <h3>Secure Booking</h3>
+            <p>Protected payments and verified travel partners.</p>
+        </div>
+
+        <div class="why-box">
+            <h3>Best Prices</h3>
+            <p>Curated deals without hidden charges.</p>
+        </div>
+
+        <div class="why-box">
+            <h3>Trusted by Travelers</h3>
+            <p>Thousands of happy explorers worldwide.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+    <p>© 2026 TrailTales. All rights reserved.</p>
+</footer>
+<script src="/js/navbar.js"></script>
+<script src="/js/saveFeature.js"></script>
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h2>Save your trip</h2>
+    <p>Please login to save this experience.</p>
+
+    <a href="/login" class="modal-btn">Continue with Email</a>
+    <button class="modal-btn google-btn">Continue with Google</button>
+  </div>
+</div>
+<div id="sidePanel" class="side-panel">
+  <div class="side-header">
+    <span>Trip Created</span>
+    <button id="closePanel">X</button>
+  </div>
+  <div id="savedItem"></div>
+</div>
+
+</body>
+</html>
