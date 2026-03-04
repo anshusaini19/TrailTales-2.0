@@ -10,6 +10,7 @@ const Destination = require('../models/mongo/destination');
 const About = require('../models/mongo/about');
 const Gallery = require('../models/mongo/gallery');
 const Testimonial = require('../models/mongo/testimonial');
+const Wishlist = require('../models/mongo/Wishlist');
 
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -266,6 +267,41 @@ router.get('/testimonials', async (req, res) => {
     res.render('testimonials', { testimonials });
   } catch (err) {
     res.status(500).send('Internal Server Error');
+  }
+});
+
+router.post('/wishlist', authMiddleware, async (req, res) => {
+  try {
+
+    const { packageId } = req.body;
+    const username = req.cookies.username;
+
+    const existing = await Wishlist.findOne({
+      username,
+      packageId
+    });
+
+    if (existing) {
+      await Wishlist.deleteOne({ _id: existing._id });
+
+      return res.json({
+        saved: false
+      });
+    }
+
+    const wishlist = new Wishlist({
+      username,
+      packageId
+    });
+
+    await wishlist.save();
+
+    res.json({
+      saved: true
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: "Wishlist error" });
   }
 });
 
