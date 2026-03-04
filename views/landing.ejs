@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TrailTales - Explore the World</title>
     <link rel="stylesheet" href="/css/landing.css">
-    <script src="https://cdn.tailwindcss.com"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 
@@ -139,16 +139,31 @@
     <p>© 2026 TrailTales. All rights reserved.</p>
 </footer>
 
+
 <!-- LOGIN MODAL -->
 <div id="loginModal" class="modal">
-  <div class="modal-content">
-    <span class="close-modal">&times;</span>
-    <h2>Save your trip</h2>
-    <p>Please login to save this experience.</p>
 
-    <a href="/login" class="modal-btn">Continue with Email</a>
-    <button class="modal-btn google-btn">Continue with Google</button>
+  <div class="modal-content">
+
+    <span class="close-modal">&times;</span>
+
+    <div class="modal-logo">TrailTales</div>
+
+    <h2>Making a list?</h2>
+    <p>Log in to add your saves to a trip you can edit or share.</p>
+
+    <button class="modal-btn google-btn">
+        <img src="/images/google.png" alt="google">
+        Continue with Google
+    </button>
+
+    <a href="/login" class="modal-btn email-btn">
+        <img src="/images/email.png" alt="email">
+        Continue with Email
+    </a>
+
   </div>
+
 </div>
 
 
