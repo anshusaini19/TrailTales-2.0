@@ -13,6 +13,10 @@ document.querySelectorAll(".heart-btn").forEach(btn => {
 
     // If user not logged in -> show modal
     if (!isLoggedIn) {
+
+      // store package user tried to save
+      localStorage.setItem("pendingSave", packageId);
+
       document.getElementById("loginModal").style.display = "flex";
       return;
     }
@@ -50,6 +54,66 @@ document.querySelectorAll(".heart-btn").forEach(btn => {
     }
 
   });
+
+});
+
+
+// ===============================
+// AUTO SAVE AFTER LOGIN
+// ===============================
+
+window.addEventListener("load", async () => {
+
+  const pendingSave = localStorage.getItem("pendingSave");
+
+  const isLoggedIn = document.body.dataset.user === "true";
+
+  if (pendingSave && isLoggedIn) {
+
+    try {
+
+      const res = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          packageId: pendingSave
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.saved) {
+
+        // turn correct heart red
+        document.querySelectorAll(".heart-btn").forEach(btn => {
+
+          if (btn.dataset.id === pendingSave) {
+
+            const heartIcon = btn.querySelector(".heart-icon");
+
+            heartIcon.textContent = "♥";
+            heartIcon.style.color = "red";
+
+          }
+
+        });
+
+        showSidePanel("Trip saved successfully!");
+
+      }
+
+      // clear storage
+      localStorage.removeItem("pendingSave");
+
+    } catch (err) {
+
+      console.error("Auto save error:", err);
+
+    }
+
+  }
 
 });
 
@@ -93,8 +157,11 @@ const closeModalBtn = document.querySelector(".close-modal");
 const authOptions = document.getElementById("authOptions");
 const registerForm = document.getElementById("registerForm");
 const loginForm = document.getElementById("loginForm");
+
+
 // NAVBAR SIGN IN BUTTON
 const openLoginBtn = document.getElementById("openLoginModal");
+
 if (openLoginBtn) {
 
   openLoginBtn.addEventListener("click", () => {
@@ -113,7 +180,6 @@ if (closeModalBtn) {
 
     loginModal.style.display = "none";
 
-    // reset modal view
     authOptions.classList.remove("hidden");
     registerForm.classList.add("hidden");
     loginForm.classList.add("hidden");
