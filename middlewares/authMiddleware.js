@@ -1,9 +1,11 @@
 // middlewares/authMiddleware.js
 
 const authMiddleware = (req, res, next) => {
-  if (!req.cookies.username) {
-    return res.redirect('/'); // redirect to login
+
+  if (!req.session || !req.session.user) {
+    return res.redirect('/'); // redirect to landing if not logged in
   }
+
   next();
 };
 

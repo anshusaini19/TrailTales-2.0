@@ -9,3 +9,27 @@ window.addEventListener("scroll", function() {
         navbar.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08)";
     }
 });
+
+const profileBtn = document.getElementById("profileBtn");
+const profileDropdown = document.getElementById("profileDropdown");
+
+if(profileBtn){
+
+profileBtn.addEventListener("click", ()=>{
+
+profileDropdown.style.display =
+profileDropdown.style.display === "block"
+? "none"
+: "block";
+
+});
+
+window.addEventListener("click",(e)=>{
+
+if(!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)){
+profileDropdown.style.display="none";
+}
+
+});
+
+}

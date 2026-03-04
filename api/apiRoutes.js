@@ -19,67 +19,88 @@ const authMiddleware = require('../middlewares/authMiddleware');
 // AUTH ROUTES
 // =========================
 
-// LOGIN
 router.post('/login', async (req, res, next) => {
-  try {
-    const { username, password } = req.body;
 
-    const user = await User.findOne({ username });
+  try {
+
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
     if (!user) {
-      return res.render('login', { error: "Invalid credentials" });
+      return res.redirect('/');
     }
 
     const isMatch = await user.comparePassword(password);
+
     if (!isMatch) {
-      return res.render('login', { error: "Invalid credentials" });
+      return res.redirect('/');
     }
 
-    res.cookie('username', user.username, {
-      httpOnly: true,
-      secure: false, // set true in production (HTTPS)
-      sameSite: 'lax'
-    });
+    // create session
+    req.session.user = {
+      id: user._id,
+      username: user.username,
+      firstName: user.firstName
+    };
 
-    return res.redirect('/api/home');
+    req.session.save(() => {
+      res.redirect('/');
+    });
 
   } catch (err) {
     next(err);
   }
+
 });
 
-
-// REGISTER
 router.post('/register', async (req, res, next) => {
-  try {
-    const { username, email, password } = req.body;
 
-    const existingUser = await User.findOne({ username });
+  try {
+
+    const { firstName, lastName, email, password } = req.body;
+
+    const username = `${firstName}_${lastName}`;
+
+    const existingUser = await User.findOne({ email });
+
     if (existingUser) {
-      return res.render('register', { error: "Username already exists" });
+      return res.redirect('/');
     }
 
-    const newUser = new User({ username, email, password });
+    const newUser = new User({
+      firstName,
+      lastName,
+      username,
+      email,
+      password
+    });
+
     await newUser.save();
 
-    // Auto login after register
-    res.cookie('username', newUser.username, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax'
-    });
+    req.session.user = {
+      id: newUser._id,
+      username: newUser.username,
+      firstName: newUser.firstName
+    };
 
-    res.redirect('/api/home');
+    req.session.save(() => {
+      res.redirect('/');
+    });
 
   } catch (err) {
     next(err);
   }
-});
 
+});
 
 // LOGOUT
 router.get('/logout', (req, res) => {
-  res.clearCookie('username');
-  res.redirect('/');
+
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
+
 });
 
 
@@ -88,18 +109,27 @@ router.get('/logout', (req, res) => {
 // =========================
 
 router.get('/home', authMiddleware, async (req, res) => {
+
   try {
+
     const data = await HomeContent.findOne();
-    const username = req.cookies?.username || null;
+
+    const username = req.session?.user?.username || null;
 
     res.render('home', {
       username,
       about1: data?.about1 || '',
       about2: data?.about2 || ''
     });
+
   } catch (err) {
-    res.status(500).json({ error: 'Error loading home content' });
+
+    res.status(500).json({
+      error: 'Error loading home content'
+    });
+
   }
+
 });
 
 
@@ -108,21 +138,34 @@ router.get('/home', authMiddleware, async (req, res) => {
 // =========================
 
 router.post('/contact', async (req, res, next) => {
+
   try {
+
     const { name, email, message } = req.body;
 
     if (!name || !email || !message) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({
+        error: 'All fields are required'
+      });
     }
 
-    const contact = new Contact({ name, email, message });
+    const contact = new Contact({
+      name,
+      email,
+      message
+    });
+
     await contact.save();
 
-    res.json({ success: true, message: 'Message stored successfully!' });
+    res.json({
+      success: true,
+      message: 'Message stored successfully!'
+    });
 
   } catch (err) {
     next(err);
   }
+
 });
 
 
@@ -131,12 +174,19 @@ router.post('/contact', async (req, res, next) => {
 // =========================
 
 router.get('/packages', async (req, res) => {
+
   try {
+
     const packages = await Package.find();
+
     res.render('packages', { packages });
+
   } catch (err) {
+
     res.status(500).send('Error fetching packages');
+
   }
+
 });
 
 
@@ -144,34 +194,32 @@ router.get('/packages', async (req, res) => {
 // BOOKING (PROTECTED)
 // =========================
 
-// View booking page (protected + track recently viewed)
 router.get('/book/:id', authMiddleware, async (req, res) => {
+
   try {
+
     const packageId = req.params.id;
 
     const selectedPackage = await Package.findById(packageId);
+
     if (!selectedPackage) {
       return res.status(404).send('Package not found');
     }
 
-    // =========================
-    // Track Recently Viewed
-    // =========================
-
     let viewed = req.cookies.recentlyViewed || [];
 
-    // Ensure it's always an array
     if (!Array.isArray(viewed)) {
       viewed = [];
     }
 
     if (!viewed.includes(packageId)) {
+
       viewed.push(packageId);
 
-      // Keep only last 5
       if (viewed.length > 5) {
         viewed.shift();
       }
+
     }
 
     res.cookie('recentlyViewed', viewed, {
@@ -179,30 +227,40 @@ router.get('/book/:id', authMiddleware, async (req, res) => {
       sameSite: 'lax'
     });
 
-    res.render('book', { package: selectedPackage });
+    res.render('book', {
+      package: selectedPackage
+    });
 
   } catch (err) {
+
     console.error('Error fetching package:', err);
+
     res.status(500).send('Error reading package');
+
   }
+
 });
 
 
-// Submit booking (protected)
+// Submit booking
 router.post('/book', authMiddleware, async (req, res, next) => {
+
   try {
-    const { 
+
+    const {
       packageId,
       name,
       email,
       phone,
       people,
       date,
-      specialRequests 
+      specialRequests
     } = req.body;
 
     if (!packageId || !name || !email || !phone || !people || !date) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({
+        error: 'All fields are required'
+      });
     }
 
     const booking = new Booking({
@@ -219,11 +277,15 @@ router.post('/book', authMiddleware, async (req, res, next) => {
 
     const selectedPackage = await Package.findById(packageId);
 
-    res.render('confirmation', { booking, package: selectedPackage });
+    res.render('confirmation', {
+      booking,
+      package: selectedPackage
+    });
 
   } catch (err) {
     next(err);
   }
+
 });
 
 
@@ -232,49 +294,86 @@ router.post('/book', authMiddleware, async (req, res, next) => {
 // =========================
 
 router.get('/destinations', async (req, res) => {
+
   try {
+
     const destinations = await Destination.find();
-    res.render('destinations', { destinations });
+
+    res.render('destinations', {
+      destinations
+    });
+
   } catch (err) {
+
     res.status(500).send('Internal Server Error');
+
   }
+
 });
 
 
 router.get('/about', async (req, res) => {
+
   try {
+
     const team = await About.find();
+
     res.render('about', { team });
+
   } catch (err) {
+
     res.status(500).send('Error fetching team members');
+
   }
+
 });
 
 
 router.get('/gallery', async (req, res) => {
+
   try {
+
     const galleryItems = await Gallery.find();
+
     res.render('gallery', { galleryItems });
+
   } catch (err) {
+
     res.status(500).send('Error loading gallery');
+
   }
+
 });
 
 
 router.get('/testimonials', async (req, res) => {
+
   try {
+
     const testimonials = await Testimonial.find();
+
     res.render('testimonials', { testimonials });
+
   } catch (err) {
+
     res.status(500).send('Internal Server Error');
+
   }
+
 });
 
+
+// =========================
+// WISHLIST (SESSION USER)
+// =========================
+
 router.post('/wishlist', authMiddleware, async (req, res) => {
+
   try {
 
     const { packageId } = req.body;
-    const username = req.cookies.username;
+
+    const username = req.session.user.username;
 
     const existing = await Wishlist.findOne({
       username,
@@ -282,11 +381,15 @@ router.post('/wishlist', authMiddleware, async (req, res) => {
     });
 
     if (existing) {
-      await Wishlist.deleteOne({ _id: existing._id });
+
+      await Wishlist.deleteOne({
+        _id: existing._id
+      });
 
       return res.json({
         saved: false
       });
+
     }
 
     const wishlist = new Wishlist({
@@ -301,8 +404,13 @@ router.post('/wishlist', authMiddleware, async (req, res) => {
     });
 
   } catch (err) {
-    res.status(500).json({ error: "Wishlist error" });
+
+    res.status(500).json({
+      error: "Wishlist error"
+    });
+
   }
+
 });
 
 

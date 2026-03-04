@@ -1,4 +1,7 @@
+// ===============================
 // HEART SAVE FEATURE
+// ===============================
+
 document.querySelectorAll(".heart-btn").forEach(btn => {
 
   btn.addEventListener("click", async function () {
@@ -51,7 +54,10 @@ document.querySelectorAll(".heart-btn").forEach(btn => {
 });
 
 
+// ===============================
 // SHOW SIDE PANEL
+// ===============================
+
 function showSidePanel(message) {
 
   const panel = document.getElementById("sidePanel");
@@ -64,7 +70,10 @@ function showSidePanel(message) {
 }
 
 
+// ===============================
 // CLOSE SIDE PANEL
+// ===============================
+
 const closePanelBtn = document.getElementById("closePanel");
 
 if (closePanelBtn) {
@@ -74,24 +83,115 @@ if (closePanelBtn) {
 }
 
 
-// MODAL CLOSE BUTTON
+// ===============================
+// LOGIN MODAL LOGIC
+// ===============================
+
 const loginModal = document.getElementById("loginModal");
 const closeModalBtn = document.querySelector(".close-modal");
 
-if (closeModalBtn) {
+const authOptions = document.getElementById("authOptions");
+const registerForm = document.getElementById("registerForm");
+const loginForm = document.getElementById("loginForm");
+// NAVBAR SIGN IN BUTTON
+const openLoginBtn = document.getElementById("openLoginModal");
+if (openLoginBtn) {
 
-  closeModalBtn.addEventListener("click", () => {
-    loginModal.style.display = "none";
+  openLoginBtn.addEventListener("click", () => {
+
+    loginModal.style.display = "flex";
+
   });
 
 }
 
 
-// CLOSE MODAL IF CLICK OUTSIDE
+// CLOSE BUTTON
+if (closeModalBtn) {
+
+  closeModalBtn.addEventListener("click", () => {
+
+    loginModal.style.display = "none";
+
+    // reset modal view
+    authOptions.classList.remove("hidden");
+    registerForm.classList.add("hidden");
+    loginForm.classList.add("hidden");
+
+  });
+
+}
+
+
+// CLICK OUTSIDE MODAL
 window.addEventListener("click", (event) => {
 
   if (event.target === loginModal) {
+
     loginModal.style.display = "none";
+
+    authOptions.classList.remove("hidden");
+    registerForm.classList.add("hidden");
+    loginForm.classList.add("hidden");
+
   }
 
 });
+
+
+// ===============================
+// CONTINUE WITH EMAIL -> REGISTER
+// ===============================
+
+const openRegister = document.getElementById("openRegister");
+
+if (openRegister) {
+
+  openRegister.addEventListener("click", () => {
+
+    authOptions.classList.add("hidden");
+    registerForm.classList.remove("hidden");
+
+  });
+
+}
+
+
+// ===============================
+// SWITCH REGISTER -> LOGIN
+// ===============================
+
+const switchLogin = document.getElementById("switchLogin");
+
+if (switchLogin) {
+
+  switchLogin.addEventListener("click", (e) => {
+
+    e.preventDefault();
+
+    registerForm.classList.add("hidden");
+    loginForm.classList.remove("hidden");
+
+  });
+
+}
+
+
+// ===============================
+// SWITCH LOGIN -> REGISTER
+// ===============================
+
+const switchRegister = document.getElementById("switchRegister");
+
+if (switchRegister) {
+
+  switchRegister.addEventListener("click", (e) => {
+
+    e.preventDefault();
+
+    loginForm.classList.add("hidden");
+    registerForm.classList.remove("hidden");
+
+  });
+
+}
