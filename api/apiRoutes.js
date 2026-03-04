@@ -413,5 +413,33 @@ router.post('/wishlist', authMiddleware, async (req, res) => {
 
 });
 
+// =========================
+// GET USER WISHLIST
+// =========================
+
+router.get('/wishlist', authMiddleware, async (req, res) => {
+
+  try {
+
+    const username = req.session.user.username;
+
+    const wishlist = await Wishlist.find({ username });
+
+    const savedIds = wishlist.map(item => item.packageId.toString());
+
+    res.json({
+      savedIds
+    });
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: "Wishlist fetch error"
+    });
+
+  }
+
+});
+
 
 module.exports = router;

@@ -117,6 +117,47 @@ window.addEventListener("load", async () => {
 
 });
 
+// ===============================
+// LOAD SAVED HEARTS FROM DATABASE
+// ===============================
+
+window.addEventListener("load", async () => {
+
+  const isLoggedIn = document.body.dataset.user === "true";
+
+  if (!isLoggedIn) return;
+
+  try {
+
+    const res = await fetch('/api/wishlist');
+
+    const data = await res.json();
+
+    const savedIds = data.savedIds || [];
+
+    document.querySelectorAll(".heart-btn").forEach(btn => {
+
+      const packageId = btn.dataset.id;
+
+      if (savedIds.includes(packageId)) {
+
+        const heartIcon = btn.querySelector(".heart-icon");
+
+        heartIcon.textContent = "♥";
+        heartIcon.style.color = "red";
+
+      }
+
+    });
+
+  } catch (err) {
+
+    console.error("Load wishlist error:", err);
+
+  }
+
+});
+
 
 // ===============================
 // SHOW SIDE PANEL
